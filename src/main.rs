@@ -123,10 +123,27 @@ fn main() {
     }
 
     println!("{:?}", site_array);
-    // resolution of image to create (pixels map directly)
-    /*
-    let mut img = Image::new(512, 512);
 
+    // resolution of image to create (pixels map directly)
+
+    let mut img = Image::new(img_res, img_res);
+
+    for x in 0..img_res {
+        for y in 0..img_res {
+            // if it's a site...
+            if grid_init[x as usize][y as usize].is_site == true {
+                img.set_pixel(x, y, bmp::consts::BLACK);
+            } else {
+                // otherwise, it's a regular point. those will need to be color-coded... eventually.
+                img.set_pixel(x, y, bmp::consts::WHITE);
+            }
+        }
+    }
+
+    // save image
+    let _ = img.save("img.bmp");
+
+    /*
     for (x, y) in img.coordinates() {
         if x > 255 && y > 255 {
             img.set_pixel(x, y, bmp::consts::AQUA)
