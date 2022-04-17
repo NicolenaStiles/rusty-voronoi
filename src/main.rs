@@ -12,6 +12,7 @@ struct VoronoiUnit {
     is_site: bool,
     closest_site: Vec<u32>,
     proximity: f64,
+    // add color property?
 }
 
 impl VoronoiUnit {
@@ -35,6 +36,7 @@ struct Voronoi {
     grid_squares: Vec<Vec<VoronoiUnit>>,
     num_sites: u32,
     sites: Vec<VoronoiUnit>,
+    palette: Vec<Vec<u8>>,
 }
 
 // where r is resolution and n is number of sites
@@ -56,11 +58,48 @@ impl Voronoi {
             let mut single_sites_obj = VoronoiUnit::new();
             sites_init.push(single_sites_obj);
         }
+        // Temp forced palette definitions
+        /*
+            Black	#000000	(0,0,0)
+            White	#FFFFFF	(255,255,255)
+            Red	#FF0000	(255,0,0)
+            Lime	#00FF00	(0,255,0)
+            Blue	#0000FF	(0,0,255)
+            Yellow	#FFFF00	(255,255,0)
+            Cyan / Aqua	#00FFFF	(0,255,255)
+            Magenta / Fuchsia	#FF00FF	(255,0,255)
+            Silver	#C0C0C0	(192,192,192)
+            Gray	#808080	(128,128,128)
+            Maroon	#800000	(128,0,0)
+            Olive	#808000	(128,128,0)
+            Green	#008000	(0,128,0)
+            Purple	#800080	(128,0,128)
+            Teal	#008080	(0,128,128)
+            Navy	#000080	(0,0,128)
+        */
+        // 16-bit color. Technically 16 colors, but we ignore white/black for now.
+        let mut temp_palette = vec![
+            vec![255, 0, 0],
+            vec![0, 255, 0],
+            vec![0, 0, 255],
+            vec![255, 255, 0],
+            vec![0, 255, 255],
+            vec![255, 0, 255],
+            vec![192, 192, 192],
+            vec![128, 128, 128],
+            vec![128, 0, 0],
+            vec![128, 128, 0],
+            vec![0, 128, 0],
+            vec![128, 0, 128],
+            vec![0, 128, 128],
+            vec![0, 0, 128],
+        ];
         // load into object
         Voronoi {
             grid_squares: grid_init,
             sites: sites_init,
             num_sites: n,
+            palette: temp_palette,
         }
     }
 
@@ -68,6 +107,7 @@ impl Voronoi {
     pub fn generate_sites(&mut self, pad: u32) {
         let mut rng = rand::thread_rng();
         let res: u32 = self.grid_squares.len() as u32;
+        // generate for each site
         for pts in 0..self.num_sites {
             // update the grid_sqaure unit
             let mut x_val: usize = rng.gen_range(pad..(res - pad)) as usize;
@@ -86,10 +126,18 @@ impl Voronoi {
     }
 
     pub fn print_status(&mut self) {
+        // number of total sites
         println!("Number of sites: {:?}", self.num_sites);
+        // loop: co-ordinates of all the sites
         let mut idx: usize = 0;
         for s in &self.sites {
             println!("Site #{:?}: {:?}", idx, s.closest_site);
+            idx += 1;
+        }
+        // loop: rgb values of each site
+        idx = 0;
+        for rgb in &self.palette {
+            println!("Color #{:?}: {:?}", idx, rgb);
             idx += 1;
         }
     }
