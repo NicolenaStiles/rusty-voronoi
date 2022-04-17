@@ -134,7 +134,7 @@ impl Voronoi {
         }
     }
 
-    pub fn generate_bitmap(&mut self) {
+    pub fn generate_bitmap(&mut self, img_name: String) {
         let img_res: u32 = self.grid_squares.len() as u32;
         // resolution of image to create (pixels map directly)
         let mut img = Image::new(img_res, img_res);
@@ -147,7 +147,7 @@ impl Voronoi {
         }
 
         // save image
-        let _ = img.save("img.bmp");
+        let _ = img.save(img_name);
     }
 
     pub fn print_status(&mut self) {
@@ -173,12 +173,13 @@ fn main() {
     let num_sites: u32 = 4;
     let img_res: u32 = 256;
     let img_pad: u32 = 16;
+    let img_name: String = String::from("img.bmp");
 
     // generates to be totally empty
     let mut test_plot = Voronoi::new(img_res, num_sites);
     test_plot.generate_sites(img_pad);
     test_plot.print_status();
-    test_plot.generate_bitmap();
+    test_plot.generate_bitmap(img_name);
     //let mut test_pts: Vec<u8> = vec![5, 3];
     //let shift: u8 = 3;
     //let mut tv = TestVect {
