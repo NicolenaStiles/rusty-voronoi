@@ -2,6 +2,11 @@
 // for random seed/site generation
 use rand::Rng;
 
+// bitmap processing
+#[macro_use]
+extern crate bmp;
+use bmp::{Image, Pixel};
+
 // subunit of the plot. basically a pixel.
 // defaults:
 // is_site = false
@@ -12,7 +17,7 @@ struct VoronoiUnit {
     is_site: bool,
     closest_site: Vec<u32>,
     proximity: f64,
-    // add color property?
+    color: Vec<u8>,
 }
 
 impl VoronoiUnit {
@@ -21,6 +26,7 @@ impl VoronoiUnit {
             is_site: false,
             closest_site: vec![0; 2],
             proximity: 0.0,
+            color: vec![255, 255, 255], // white
         }
     }
 
@@ -28,6 +34,7 @@ impl VoronoiUnit {
         println!("is site? {:?}", self.is_site);
         println!("closest site? {:?}", self.closest_site);
         println!("site dist: {:?}", self.proximity);
+        println!("rgb: {:?}", self.color);
     }
 }
 
@@ -115,14 +122,32 @@ impl Voronoi {
             self.grid_squares[x_val][y_val].is_site = true;
             self.grid_squares[x_val][y_val].closest_site[0] = x_val as u32;
             self.grid_squares[x_val][y_val].closest_site[1] = y_val as u32;
+            self.grid_squares[x_val][y_val].color = vec![0; 3];
             // update the 'sites' subsection
             self.sites[pts as usize].is_site = true;
             self.sites[pts as usize].closest_site[0] = x_val as u32;
             self.sites[pts as usize].closest_site[1] = y_val as u32;
+            self.sites[pts as usize].color = vec![0; 3];
             // leave proximity as 0.0, maybe change convention later?
             // self.grid_squares[x_val][y_val].proximity = 0.0;
             // self.sites[pts as usize].proximity = 0.0;
         }
+    }
+
+    pub fn generate_bitmap(&mut self) {
+        let img_res: u32 = self.grid_squares.len() as u32;
+        // resolution of image to create (pixels map directly)
+        let mut img = Image::new(img_res, img_res);
+
+        for x in 0..img_res {
+            for y in 0..img_res {
+                let rgb = &self.grid_squares[x as usize][y as usize].color;
+                img.set_pixel(x, y, px!(rgb[0], rgb[1], rgb[2]));
+            }
+        }
+
+        // save image
+        let _ = img.save("img.bmp");
     }
 
     pub fn print_status(&mut self) {
@@ -153,6 +178,7 @@ fn main() {
     let mut test_plot = Voronoi::new(img_res, num_sites);
     test_plot.generate_sites(img_pad);
     test_plot.print_status();
+    test_plot.generate_bitmap();
     //let mut test_pts: Vec<u8> = vec![5, 3];
     //let shift: u8 = 3;
     //let mut tv = TestVect {
