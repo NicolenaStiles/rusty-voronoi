@@ -30,7 +30,7 @@ use bmp::{Image, Pixel};
 ///////////////////////////////////////////////////////////////////////////////
 
 // field UnitType for VoronoiPoint
-#[derive(Clone)]
+#[derive(Copy,Clone)]
 enum UnitType {
     Undefined,
     Site,
@@ -133,7 +133,8 @@ impl VoronoiGraph {
             let mut row_init = Vec::new();
             for y in 0..r {
                 let mut single_graph_obj = VoronoiPoint::new();
-                single_graph_obj.coordinates = vec![(r as u32), (r as u32)];
+                single_graph_obj.coordinates = vec![x, y];
+                single_graph_obj.unit_type = UnitType::Regular;
                 row_init.push(single_graph_obj);
             }
             grid_init.push(row_init);
@@ -158,6 +159,8 @@ impl VoronoiGraph {
             grid_init[x_val][y_val].color = vec![255; 3];
             // update the 'sites' subsection
             sites_init[pts as usize].unit_type = UnitType::Site;
+            sites_init[pts as usize].coordinates[0] = x_val as u32;
+            sites_init[pts as usize].coordinates[1] = y_val as u32;
             sites_init[pts as usize].site_coordinates[0] = x_val as u32;
             sites_init[pts as usize].site_coordinates[1] = y_val as u32;
             sites_init[pts as usize].color = vec![255; 3];
@@ -169,12 +172,45 @@ impl VoronoiGraph {
         // calculate closest proximity
         for x in 0..r {
             for y in 0..r {
-                // current point for dist calcs
-                let mut current_pt: VoronoiPoint = grid_init[r as usize][r as usize];
+                // current point for dist calcs (so long as it's not a site!)
+                let current_pt: VoronoiPoint = grid_init[x as usize][y as usize].clone();
+                println!("Current point: {:?}", current_pt.coordinates);
+                // init min distance to the max possible distance
+                let min_dist: f64 = (r as f64) * (2 as f64).sqrt();
+                // aggregate distances
+                let mut dist_list: Vec<f64> = Vec::new();
+                // only works for square images!
+                // TODO: will need cleanup!!
                 // loop over sites and get distances
                 for sites in 0..n {
-                    
+                    // current site for dist calcs
+                    let current_site:VoronoiPoint = sites_init[sites as usize].clone();
+                    match current_pt.unit_type {
+                        UnitType::Boundary => (),
+                        UnitType::Undefined => (),
+                        UnitType::Site => (),
+                        UnitType::Regular => {
+                            // point vals
+                            let mut point_x: f64 = current_pt.coordinates[0] as f64;
+                            let mut point_y: f64 = current_pt.coordinates[1] as f64;
+                            // site vals
+                            let mut site_x: f64 = current_site.coordinates[0] as f64;
+                            let mut site_y: f64 = current_site.coordinates[1] as f64;
+                            // dist val
+                            let mut curr_dist: f64 = 0.0;
+                            // distance calculation
+                            let mut sq_x = f64::powf((site_x - point_x), 2.0);
+                            let mut sq_y = f64::powf((site_y - point_y), 2.0);
+                            curr_dist = f64::sqrt(sq_x + sq_y);
+                            dist_list.push(curr_dist);
+                        },
+                        _ => (),
+                    }
                 }
+
+                // debug only
+                println!("Distances: {:?}", dist_list);
+
             }
         }
 
@@ -209,6 +245,7 @@ impl VoronoiGraph {
     // IN PROGRESS
     // loop over all the pixels and calculate distances
     // this is done so poorly it's honestly kinda incredible
+    /* 
     pub fn solve_sites(&mut self) {
         let x_res: usize = self.grid_squares[0].len();
         let y_res: usize = self.grid_squares.len();
@@ -245,6 +282,7 @@ impl VoronoiGraph {
 
         
     }
+    */
 
     pub fn generate_bitmap(&mut self, img_name: String) {
         let img_res: u32 = self.grid_squares.len() as u32;

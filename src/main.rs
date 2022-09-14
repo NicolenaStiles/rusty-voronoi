@@ -16,10 +16,9 @@ fn main() {
     let img_name: String = String::from("img.bmp");
 
     // generates to be totally empty 
-    let mut test_plot = Voronoi::VoronoiGraph::new(img_res, num_sites);
-    test_plot.generate_sites(img_pad);
+    let mut test_plot = Voronoi::VoronoiGraph::new(img_res, num_sites, img_pad);
     test_plot.print_status();
-    test_plot.solve_sites();
+    //test_plot.solve_sites();
     test_plot.generate_bitmap(img_name);    
     
     //let mut test_pts: Vec<u8> = vec![5, 3];
