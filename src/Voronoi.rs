@@ -123,9 +123,10 @@ pub struct VoronoiGraph {
     palette: Vec<Vec<u8>>,
 }
 
-// where r is resolution, n is number of sites, 
+// where r is resolution, n is number of sites, pad is distance from boundaries 
 impl VoronoiGraph {
-    pub fn new(r: u32, n: u32) -> Self {
+    pub fn new(r: u32, n: u32, pad: u32) -> Self {
+        
         // generate empty grid
         let mut grid_init = Vec::new();
         for x in 0..r {
@@ -137,16 +138,45 @@ impl VoronoiGraph {
             }
             grid_init.push(row_init);
         }
+
         // generate empty sites
         let mut sites_init = Vec::new();
         for x in 0..n {
             let mut single_sites_obj = VoronoiPoint::new();
             sites_init.push(single_sites_obj);
-        
-        
         }
 
-        // random site generation
+        // random site selection
+        let mut rng = rand::thread_rng();
+        for pts in 0..n {
+            // update the grid_sqaure unit
+            let mut x_val: usize = rng.gen_range(pad..(r - pad)) as usize;
+            let mut y_val: usize = rng.gen_range(pad..(r - pad)) as usize;
+            grid_init[x_val][y_val].unit_type = UnitType::Site;
+            grid_init[x_val][y_val].site_coordinates[0] = x_val as u32;
+            grid_init[x_val][y_val].site_coordinates[1] = y_val as u32;
+            grid_init[x_val][y_val].color = vec![255; 3];
+            // update the 'sites' subsection
+            sites_init[pts as usize].unit_type = UnitType::Site;
+            sites_init[pts as usize].site_coordinates[0] = x_val as u32;
+            sites_init[pts as usize].site_coordinates[1] = y_val as u32;
+            sites_init[pts as usize].color = vec![255; 3];
+            // leave proximity as 0.0, maybe change convention later?
+            grid_init[x_val][y_val].proximity = 0.0;
+            sites_init[pts as usize].proximity = 0.0;
+        }
+
+        // calculate closest proximity
+        for x in 0..r {
+            for y in 0..r {
+                // current point for dist calcs
+                let mut current_pt: VoronoiPoint = grid_init[r as usize][r as usize];
+                // loop over sites and get distances
+                for sites in 0..n {
+                    
+                }
+            }
+        }
 
         // 16-bit color. Technically 16 colors, but we ignore white/black for now.
         // see comment at op for what is what
@@ -173,30 +203,6 @@ impl VoronoiGraph {
             sites: sites_init,
             num_sites: n,
             palette: temp_palette,
-        }
-    }
-
-    // Warning, converts a u32 into a usize. Not a good way to do it.
-    pub fn generate_sites(&mut self, pad: u32) {
-        let mut rng = rand::thread_rng();
-        let res: u32 = self.grid_squares.len() as u32;
-        // generate for each site
-        for pts in 0..self.num_sites {
-            // update the grid_sqaure unit
-            let mut x_val: usize = rng.gen_range(pad..(res - pad)) as usize;
-            let mut y_val: usize = rng.gen_range(pad..(res - pad)) as usize;
-            self.grid_squares[x_val][y_val].unit_type = UnitType::Site;
-            self.grid_squares[x_val][y_val].site_coordinates[0] = x_val as u32;
-            self.grid_squares[x_val][y_val].site_coordinates[1] = y_val as u32;
-            self.grid_squares[x_val][y_val].color = vec![0; 3];
-            // update the 'sites' subsection
-            self.sites[pts as usize].unit_type = UnitType::Site;
-            self.sites[pts as usize].site_coordinates[0] = x_val as u32;
-            self.sites[pts as usize].site_coordinates[1] = y_val as u32;
-            self.sites[pts as usize].color = vec![0; 3];
-            // leave proximity as 0.0, maybe change convention later?
-            // self.grid_squares[x_val][y_val].proximity = 0.0;
-            // self.sites[pts as usize].proximity = 0.0;
         }
     }
 
