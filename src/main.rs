@@ -1,8 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Main Application
 ///////////////////////////////////////////////////////////////////////////////
-mod VoronoiPoint;
-mod VoronoiGraph;
+mod Voronoi;
 
 // bitmap processing
 #[macro_use]
@@ -17,7 +16,7 @@ fn main() {
     let img_name: String = String::from("img.bmp");
 
     // generates to be totally empty 
-    let mut test_plot = VoronoiGraph::VoronoiGraph::new(img_res, num_sites);
+    let mut test_plot = Voronoi::VoronoiGraph::new(img_res, num_sites);
     test_plot.generate_sites(img_pad);
     test_plot.print_status();
     test_plot.solve_sites();
