@@ -181,16 +181,16 @@ impl VoronoiGraph {
                 // aggregate distances
                 let mut dist_list: Vec<f64> = Vec::new();
                 // only works for square images!
-                // TODO: will need cleanup!!
-                // loop over sites and get distances
-                for sites in 0..n {
-                    // current site for dist calcs
-                    let current_site:VoronoiPoint = sites_init[sites as usize].clone();
-                    match current_pt.unit_type {
-                        UnitType::Boundary => (),
-                        UnitType::Undefined => (),
-                        UnitType::Site => (),
-                        UnitType::Regular => {
+                // check what kind of point is currently active
+                match current_pt.unit_type {
+                    UnitType::Boundary => (),
+                    UnitType::Undefined => (),
+                    UnitType::Site => (),
+                    UnitType::Regular => {
+                        // loop over sites and get distances
+                        for sites in 0..n {
+                            // current site for dist vals
+                            let current_site:VoronoiPoint = sites_init[sites as usize].clone();
                             // point vals
                             let mut point_x: f64 = current_pt.coordinates[0] as f64;
                             let mut point_y: f64 = current_pt.coordinates[1] as f64;
@@ -204,52 +204,46 @@ impl VoronoiGraph {
                             let mut sq_y = f64::powf((site_y - point_y), 2.0);
                             curr_dist = f64::sqrt(sq_x + sq_y);
                             dist_list.push(curr_dist);
-                        },
-                        _ => (),
-                    }
-                }
+
+                        }
+
+                        for dist in 0..n {
+                            if min_dist > dist_list[dist as usize] {
+                                min_dist = dist_list[dist as usize];
+                                min_dist_site = dist as usize;
+                            }
+                        }
+                
+                        // update fields with new info
+                        grid_init[x as usize][y as usize].site_coordinates[0] = sites_init[min_dist_site].coordinates[0];
+                        grid_init[x as usize][y as usize].site_coordinates[1] = sites_init[min_dist_site].coordinates[1];
+                        grid_init[x as usize][y as usize].proximity = min_dist;
+                
+                        // hard-coding some colors for testing...
+                        /*
+                            Red	#FF0000	(255,0,0)
+                            Lime	#00FF00	(0,255,0)
+                            Blue	#0000FF	(0,0,255)
+                            Yellow	#FFFF00	(255,255,0)
+                        */
+                        match min_dist_site {
+                            0 => grid_init[x as usize][y as usize].color = vec![255, 0, 0],
+                            1 => grid_init[x as usize][y as usize].color = vec![0, 255, 0],
+                            2 => grid_init[x as usize][y as usize].color = vec![0, 0, 255],
+                            3 => grid_init[x as usize][y as usize].color = vec![255, 255, 0],
+                            _ => (),
+                        };
+                    },
+                    _ => (),                    
+                };
 
                 // debug only
+                //println!("Distances: {:?}", dist_list);
+                //let min_value = dist_list.iter().cloned().fold(0./0., f64::min);
+                //println!("Min val: {:?}", min_value);
                 //grid_init[x as usize][y as usize].print_status();
-                // debug only
-                println!("Distances: {:?}", dist_list);
-                let min_value = dist_list.iter().cloned().fold(0./0., f64::min);
-                println!("Min val: {:?}", min_value);
             }
         }
-
-        // now find dist "properly" and update fields
-        // TODO: you are here! 
-        // 1. add this logic in above
-        // 2. break out the "unit type" logic to encompass entire point evaluation, not just in 0-n site processing
-        /*
-        for dist in 0..n {
-            if min_dist > dist_list[dist as usize] {
-                min_dist = dist_list[dist as usize];
-                min_dist_site = dist as usize;
-            }
-        }
-
-        // update fields with new info
-        grid_init[x as usize][y as usize].site_coordinates[0] = sites_init[min_dist_site].coordinates[0];
-        grid_init[x as usize][y as usize].site_coordinates[1] = sites_init[min_dist_site].coordinates[1];
-        grid_init[x as usize][y as usize].proximity = min_dist;
-
-        // hard-coding some colors for testing...
-        /*
-            Red	#FF0000	(255,0,0)
-            Lime	#00FF00	(0,255,0)
-            Blue	#0000FF	(0,0,255)
-            Yellow	#FFFF00	(255,255,0)
-        */
-        match min_dist_site {
-            0 => grid_init[x as usize][y as usize].color = vec![255, 0, 0],
-            1 => grid_init[x as usize][y as usize].color = vec![0, 255, 0],
-            2 => grid_init[x as usize][y as usize].color = vec![0, 0, 255],
-            3 => grid_init[x as usize][y as usize].color = vec![255, 255, 0],
-            _ => (),
-        };
-        */
 
         // 16-bit color. Technically 16 colors, but we ignore white/black for now.
         // see comment at op for what is what
