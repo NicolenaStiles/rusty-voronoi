@@ -25,7 +25,7 @@ use bmp::{Image, Pixel};
 // - unit_type = undefined
 // - coordinates = (0,0) of u32
 // - site_coordinates = (0,0) of u32
-// - proximity = 0.0
+// - proximity = 0.0 as f64
 // - color: white [255,255,255]
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -84,16 +84,69 @@ impl VoronoiPoint {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Helper function: Vornoi Dist
+///////////////////////////////////////////////////////////////////////////////
+// Returns the distance between two Voronoi points as a float.
+///////////////////////////////////////////////////////////////////////////////
+// arguments:
+// - start: VoronoiPoint
+// - end: VoronoiPoint
+// returns:
+// - dist: f64
+///////////////////////////////////////////////////////////////////////////////
+fn calc_voronoi_dist(start: VoronoiPoint, end: VoronoiPoint) -> f64 {
+    // point vals
+    let point1_x: f64 = start.coordinates[0] as f64;
+    let point1_y: f64 = start.coordinates[1] as f64;
+    let point2_x: f64 = end.coordinates[0] as f64;
+    let point2_y: f64 = end.coordinates[1] as f64;
+    // distance calculation
+    let sq_x = f64::powf(point2_x - point1_x, 2.0);
+    let sq_y = f64::powf(point2_y - point1_y, 2.0);
+    let dist: f64 = f64::sqrt(sq_x + sq_y); 
+    return dist;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helper function: Random Voronoi Site
+///////////////////////////////////////////////////////////////////////////////
+// Generate a random voronoi site
+///////////////////////////////////////////////////////////////////////////////
+// arguments:
+// - min_x: f64
+// - max_x: f64
+// - min_y: f64
+// - max_y: f64
+// returns:
+// - voronoi_pt: VoronoiPoint
+///////////////////////////////////////////////////////////////////////////////
+fn generate_random_site(min_x: f64, max_x: f64, min_y: f64, max_y: f64) -> VoronoiPoint {
+    let mut new_pt: VoronoiPoint = VoronoiPoint::new();
+    let mut rng = rand::thread_rng();
+    // update the grid_sqaure unit
+    let x_val: u32 = rng.gen_range(min_x..max_x) as u32;
+    let y_val: u32 = rng.gen_range(min_y..max_y) as u32;
+    // update the 'sites' subsection
+    new_pt.unit_type = UnitType::Site;
+    new_pt.coordinates[0] = x_val as u32;
+    new_pt.coordinates[1] = y_val as u32;
+    new_pt.site_coordinates[0] = x_val as u32;
+    new_pt.site_coordinates[1] = y_val as u32;
+    new_pt.color = vec![255; 3]; // set color to black
+    new_pt.proximity = 0.0;
+    return new_pt;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // VoronoiGraph.rs
 ///////////////////////////////////////////////////////////////////////////////
 // Plot to represent an image of Voronoi Points.
 ///////////////////////////////////////////////////////////////////////////////
-// defaults:
-// - unit_type = undefined
-// - coordinates = (0,0)
-// - site_coordinates = (0,0)
-// - proximity = 0.0
-// - color: white [255,255,255]
+// fields/defaults:
+// - grid_squares: Vec<Vec<VoronoiPoint>>,
+// - num_sites: u32,
+// - sites: Vec<VoronoiPoint>,
+// - palette: Vec<Vec<u8>>,
 ///////////////////////////////////////////////////////////////////////////////
 // List of color options:        
 /*
@@ -174,7 +227,6 @@ impl VoronoiGraph {
             for y in 0..r {
                 // current point for dist calcs (so long as it's not a site!)
                 let current_pt: VoronoiPoint = grid_init[x as usize][y as usize].clone();
-                println!("Current point: {:?}", current_pt.coordinates);
                 // init min distance to the max possible distance
                 let mut min_dist: f64 = (r as f64) * (2 as f64).sqrt();
                 let mut min_dist_site : usize = 0;
@@ -190,23 +242,14 @@ impl VoronoiGraph {
                         // loop over sites and get distances
                         for sites in 0..n {
                             // current site for dist vals
+                            // have to clone this again because scope
+                            let current_pt: VoronoiPoint = grid_init[x as usize][y as usize].clone();
                             let current_site:VoronoiPoint = sites_init[sites as usize].clone();
-                            // point vals
-                            let mut point_x: f64 = current_pt.coordinates[0] as f64;
-                            let mut point_y: f64 = current_pt.coordinates[1] as f64;
-                            // site vals
-                            let mut site_x: f64 = current_site.coordinates[0] as f64;
-                            let mut site_y: f64 = current_site.coordinates[1] as f64;
-                            // dist val
-                            let mut curr_dist: f64 = 0.0;
-                            // distance calculation
-                            let mut sq_x = f64::powf((site_x - point_x), 2.0);
-                            let mut sq_y = f64::powf((site_y - point_y), 2.0);
-                            curr_dist = f64::sqrt(sq_x + sq_y);
+                            let curr_dist: f64 = calc_voronoi_dist(current_pt, current_site);
                             dist_list.push(curr_dist);
-
                         }
 
+                        // min dist calcs
                         for dist in 0..n {
                             if min_dist > dist_list[dist as usize] {
                                 min_dist = dist_list[dist as usize];
@@ -273,48 +316,6 @@ impl VoronoiGraph {
         }
     }
 
-    // IN PROGRESS
-    // loop over all the pixels and calculate distances
-    // this is done so poorly it's honestly kinda incredible
-    /* 
-    pub fn solve_sites(&mut self) {
-        let x_res: usize = self.grid_squares[0].len();
-        let y_res: usize = self.grid_squares.len();
-        
-        println!("x,y resolution: {:?},{:?}", x_res, y_res);
-
-        // looping over all the pixels
-        for x in 0..x_res {
-            for y in 0..y_res {
-                // loop over all the sites, too
-                // which one is the closest?
-                println!("Current pixel: {:?}, {:?}", x, y);
-                // fix this later!!! current way to find pixels that aren't sites
-                // (won't work once boundaries are implemented, etc)
-                if matches!(self.grid_squares[x][y].unit_type, UnitType::Undefined) {
-                    let mut distance: Vec<f64> = Vec::new();
-                    for st in &self.sites {
-                        let mut site_x: usize = (st.site_coordinates[0] as usize);
-                        let mut site_y: usize = (st.site_coordinates[1] as usize);
-
-                        let mut curr_dist: f64 = 0.0;
-                        let mut sq_x = usize::pow((site_x - x), 2);
-                        let mut sq_y = usize::pow((site_y - y), 2);
-                        curr_dist = f64::sqrt(sq_y as f64 / sq_y as f64); 
-                        println!("{:?}", curr_dist);
-                        //f64::sqrt()
-                        //let a = 2; // Can also explicitly define type i.e. i32
-                        //let a = i32::pow(a, 10);
-
-                    }
-                }
-            }
-        }
-
-        
-    }
-    */
-
     pub fn generate_bitmap(&mut self, img_name: String) {
         let img_res: u32 = self.grid_squares.len() as u32;
         // resolution of image to create (pixels map directly)
@@ -339,15 +340,6 @@ impl VoronoiGraph {
         for s in &self.sites {
             println!("Site #{:?}: {:?}", idx, s.site_coordinates);
             idx += 1;
-        }
-        // loop: rgb values of each site
-        /* 
-        idx = 0;
-        for rgb in &self.palette {
-            println!("Color #{:?}: {:?}", idx, rgb);
-            idx += 1;
-        }
-        */
-        
+        }        
     }
 }
