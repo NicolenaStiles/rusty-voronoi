@@ -174,7 +174,6 @@ impl VoronoiGraph {
             for y in 0..r {
                 // current point for dist calcs (so long as it's not a site!)
                 let current_pt: VoronoiPoint = grid_init[x as usize][y as usize].clone();
-                println!("Current point: {:?}", current_pt.coordinates);
                 // init min distance to the max possible distance
                 let mut min_dist: f64 = (r as f64) * (2 as f64).sqrt();
                 let mut min_dist_site : usize = 0;
@@ -273,48 +272,6 @@ impl VoronoiGraph {
         }
     }
 
-    // IN PROGRESS
-    // loop over all the pixels and calculate distances
-    // this is done so poorly it's honestly kinda incredible
-    /* 
-    pub fn solve_sites(&mut self) {
-        let x_res: usize = self.grid_squares[0].len();
-        let y_res: usize = self.grid_squares.len();
-        
-        println!("x,y resolution: {:?},{:?}", x_res, y_res);
-
-        // looping over all the pixels
-        for x in 0..x_res {
-            for y in 0..y_res {
-                // loop over all the sites, too
-                // which one is the closest?
-                println!("Current pixel: {:?}, {:?}", x, y);
-                // fix this later!!! current way to find pixels that aren't sites
-                // (won't work once boundaries are implemented, etc)
-                if matches!(self.grid_squares[x][y].unit_type, UnitType::Undefined) {
-                    let mut distance: Vec<f64> = Vec::new();
-                    for st in &self.sites {
-                        let mut site_x: usize = (st.site_coordinates[0] as usize);
-                        let mut site_y: usize = (st.site_coordinates[1] as usize);
-
-                        let mut curr_dist: f64 = 0.0;
-                        let mut sq_x = usize::pow((site_x - x), 2);
-                        let mut sq_y = usize::pow((site_y - y), 2);
-                        curr_dist = f64::sqrt(sq_y as f64 / sq_y as f64); 
-                        println!("{:?}", curr_dist);
-                        //f64::sqrt()
-                        //let a = 2; // Can also explicitly define type i.e. i32
-                        //let a = i32::pow(a, 10);
-
-                    }
-                }
-            }
-        }
-
-        
-    }
-    */
-
     pub fn generate_bitmap(&mut self, img_name: String) {
         let img_res: u32 = self.grid_squares.len() as u32;
         // resolution of image to create (pixels map directly)
@@ -339,15 +296,6 @@ impl VoronoiGraph {
         for s in &self.sites {
             println!("Site #{:?}: {:?}", idx, s.site_coordinates);
             idx += 1;
-        }
-        // loop: rgb values of each site
-        /* 
-        idx = 0;
-        for rgb in &self.palette {
-            println!("Color #{:?}: {:?}", idx, rgb);
-            idx += 1;
-        }
-        */
-        
+        }        
     }
 }
