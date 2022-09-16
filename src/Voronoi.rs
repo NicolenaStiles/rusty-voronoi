@@ -95,7 +95,6 @@ impl VoronoiPoint {
 // - dist: f64
 ///////////////////////////////////////////////////////////////////////////////
 fn calc_voronoi_dist(start: VoronoiPoint, end: VoronoiPoint) -> f64 {
-    let mut dist: f64 = 0.0;
     // point vals
     let point1_x: f64 = start.coordinates[0] as f64;
     let point1_y: f64 = start.coordinates[1] as f64;
@@ -104,7 +103,7 @@ fn calc_voronoi_dist(start: VoronoiPoint, end: VoronoiPoint) -> f64 {
     // distance calculation
     let sq_x = f64::powf(point2_x - point1_x, 2.0);
     let sq_y = f64::powf(point2_y - point1_y, 2.0);
-    dist = f64::sqrt(sq_x + sq_y); 
+    let dist: f64 = f64::sqrt(sq_x + sq_y); 
     return dist;
 }
 
