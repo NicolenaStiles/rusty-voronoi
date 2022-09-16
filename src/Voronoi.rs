@@ -214,21 +214,11 @@ impl VoronoiGraph {
                         // loop over sites and get distances
                         for sites in 0..n {
                             // current site for dist vals
+                            // have to clone this again because scope
+                            let current_pt: VoronoiPoint = grid_init[x as usize][y as usize].clone();
                             let current_site:VoronoiPoint = sites_init[sites as usize].clone();
-                            // point vals
-                            let mut point_x: f64 = current_pt.coordinates[0] as f64;
-                            let mut point_y: f64 = current_pt.coordinates[1] as f64;
-                            // site vals
-                            let mut site_x: f64 = current_site.coordinates[0] as f64;
-                            let mut site_y: f64 = current_site.coordinates[1] as f64;
-                            // dist val
-                            let mut curr_dist: f64 = 0.0;
-                            // distance calculation
-                            let mut sq_x = f64::powf((site_x - point_x), 2.0);
-                            let mut sq_y = f64::powf((site_y - point_y), 2.0);
-                            curr_dist = f64::sqrt(sq_x + sq_y);
+                            let curr_dist: f64 = calc_voronoi_dist(current_pt, current_site);
                             dist_list.push(curr_dist);
-
                         }
 
                         // min dist calcs
