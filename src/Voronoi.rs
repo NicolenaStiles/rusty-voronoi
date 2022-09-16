@@ -206,6 +206,7 @@ impl VoronoiGraph {
 
                         }
 
+                        // min dist calcs
                         for dist in 0..n {
                             if min_dist > dist_list[dist as usize] {
                                 min_dist = dist_list[dist as usize];
