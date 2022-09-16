@@ -25,7 +25,7 @@ use bmp::{Image, Pixel};
 // - unit_type = undefined
 // - coordinates = (0,0) of u32
 // - site_coordinates = (0,0) of u32
-// - proximity = 0.0
+// - proximity = 0.0 as f64
 // - color: white [255,255,255]
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -109,16 +109,45 @@ fn calc_voronoi_dist(start: VoronoiPoint, end: VoronoiPoint) -> f64 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Helper function: Random Voronoi Site
+///////////////////////////////////////////////////////////////////////////////
+// Generate a random voronoi site
+///////////////////////////////////////////////////////////////////////////////
+// arguments:
+// - min_x: f64
+// - max_x: f64
+// - min_y: f64
+// - max_y: f64
+// returns:
+// - voronoi_pt: VoronoiPoint
+///////////////////////////////////////////////////////////////////////////////
+fn generate_random_site(min_x: f64, max_x: f64, min_y: f64, max_y: f64) -> VoronoiPoint {
+    let mut new_pt: VoronoiPoint = VoronoiPoint::new();
+    let mut rng = rand::thread_rng();
+    // update the grid_sqaure unit
+    let x_val: u32 = rng.gen_range(min_x..max_x) as u32;
+    let y_val: u32 = rng.gen_range(min_y..max_y) as u32;
+    // update the 'sites' subsection
+    new_pt.unit_type = UnitType::Site;
+    new_pt.coordinates[0] = x_val as u32;
+    new_pt.coordinates[1] = y_val as u32;
+    new_pt.site_coordinates[0] = x_val as u32;
+    new_pt.site_coordinates[1] = y_val as u32;
+    new_pt.color = vec![255; 3]; // set color to black
+    new_pt.proximity = 0.0;
+    return new_pt;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // VoronoiGraph.rs
 ///////////////////////////////////////////////////////////////////////////////
 // Plot to represent an image of Voronoi Points.
 ///////////////////////////////////////////////////////////////////////////////
-// defaults:
-// - unit_type = undefined
-// - coordinates = (0,0)
-// - site_coordinates = (0,0)
-// - proximity = 0.0
-// - color: white [255,255,255]
+// fields/defaults:
+// - grid_squares: Vec<Vec<VoronoiPoint>>,
+// - num_sites: u32,
+// - sites: Vec<VoronoiPoint>,
+// - palette: Vec<Vec<u8>>,
 ///////////////////////////////////////////////////////////////////////////////
 // List of color options:        
 /*
